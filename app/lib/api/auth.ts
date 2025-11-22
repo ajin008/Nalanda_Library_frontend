@@ -1,0 +1,56 @@
+interface signupProp {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface loginProp {
+  email: string;
+  password: string;
+}
+
+import { toast } from "sonner";
+
+export const signupUser = async (data: signupProp) => {
+  const finalData = { ...data, role: "user" };
+  const result = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(finalData),
+    }
+  );
+
+  return result.json();
+};
+
+export const loginUser = async (data: loginProp) => {
+  const result = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    }
+  );
+
+  //   console.log("response from loginUser ", result);
+  //   if (!result.ok) throw new Error("login failed");
+
+  return result.json();
+};
+
+export const Logout = async () => {
+  const result = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  if (!result.ok) throw new Error("server error");
+  return result.json();
+};
