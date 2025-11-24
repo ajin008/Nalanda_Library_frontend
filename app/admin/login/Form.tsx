@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { loginAdmin } from "@/app/lib/api/auth";
+import { useAuthStore } from "@/app/lib/store/authStore";
 
 interface AdminLoginFormData {
   email: string;
@@ -13,6 +15,8 @@ interface AdminLoginFormData {
 export default function Form() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const setUser = useAuthStore((state) => state.setUser);
 
   const {
     register,
@@ -24,15 +28,24 @@ export default function Form() {
     setIsLoading(true);
 
     try {
-      // Simulate API call - replace with your actual admin login API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await loginAdmin(data);
+      setUser(res.user);
+      if (res.success) {
+        toast.success("Welcome back! Login successful.");
 
-      // Here you would call your admin login API
-      // const res = await loginAdmin(data);
-
-      console.log("Admin login data:", data);
-      toast.success("Welcome back, Admin!");
-      router.push("/admin/dashboard");
+        const role = res.user.role;
+        if (role === "user") {
+          setTimeout(() => {
+            router.replace("/user/login");
+          }, 500);
+        } else if (role === "admin") {
+          setTimeout(() => {
+            router.replace("/admin/dashboard");
+          }, 500);
+        }
+      } else {
+        toast.error(res.message || "Login failed. Please try again.");
+      }
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
       console.error("Admin login error:", error);

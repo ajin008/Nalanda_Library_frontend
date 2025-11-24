@@ -1,26 +1,25 @@
-// components/dashboard/TopBar.tsx
+// components/dashboard/AdminTopBar.tsx
 "use client";
-import { Logout } from "@/app/lib/api/auth";
-import { useUserStore } from "@/app/lib/store/userStore";
+import { logoutAdmin } from "@/app/lib/api/auth";
+import { useAuthStore } from "@/app/lib/store/authStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function TopBar() {
+export default function AdminTopBar() {
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const { user, clearUser } = useUserStore();
+  const user = useAuthStore((state) => state.user);
+  const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      const res = await Logout();
-      clearUser();
+      const res = await logoutAdmin();
 
       if (res.success) {
-        clearUser(); // Clear user from store on logout
+        clearUser();
         toast.success("Logged out successfully");
-        router.replace("/user/login");
+        router.replace("/admin/login");
       }
     } catch (err) {
       toast.error(`${err}`);
@@ -29,7 +28,7 @@ export default function TopBar() {
 
   // Get user initials for avatar
   const getUserInitials = () => {
-    if (!user?.name) return "U";
+    if (!user?.name) return "A";
     return user.name
       .split(" ")
       .map((word) => word[0])
@@ -43,22 +42,20 @@ export default function TopBar() {
       <div className="flex justify-between items-center px-6 py-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
-            Member Dashboard
+            System Overview
           </h1>
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* User Info */}
+          {/* Admin Info */}
           <div className="flex items-center space-x-3">
             <div className="text-right">
               <p className="text-sm font-medium text-gray-900">
-                {user?.name || "User"}
+                {user?.name || "Administrator"}
               </p>
-              <p className="text-xs text-gray-500 capitalize">
-                {user?.role || "Member"}
-              </p>
+              <p className="text-xs text-gray-500">{user?.role || "Admin"}</p>
             </div>
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+            <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
               {getUserInitials()}
             </div>
           </div>

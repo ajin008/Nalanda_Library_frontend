@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { signupAdmin } from "@/app/lib/api/auth";
 
 interface AdminSignupFormData {
   name: string;
@@ -25,15 +26,16 @@ export default function Form() {
     setIsLoading(true);
 
     try {
-      // Simulate API call - replace with your actual admin signup API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await signupAdmin(data);
 
-      // Here you would call your admin signup API
-      // const res = await signupAdmin(data);
-
-      console.log("Admin signup data:", data);
-      toast.success("Admin account created successfully!");
-      router.push("/admin/dashboard");
+      if (res.success) {
+        toast.success("Account created successfully!");
+        setTimeout(() => {
+          router.replace("/admin/login");
+        }, 1000);
+      } else {
+        toast.error(res.message || "Signup failed. Please try again.");
+      }
     } catch (error) {
       toast.error("Failed to create admin account. Please try again.");
       console.error("Admin signup error:", error);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/app/lib/store/userStore";
 
 interface LoginFormData {
   email: string;
@@ -22,12 +23,13 @@ export const Form = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-
+    const { setUser } = useUserStore.getState();
     try {
       const res = await loginUser(data);
 
       if (res.success) {
         toast.success("Welcome back! Login successful.");
+        setUser(res.user);
         const role = res.user.role;
         if (role === "user") {
           setTimeout(() => {
@@ -245,7 +247,7 @@ export const Form = () => {
               {/* Sign up Link */}
               <div className="text-center">
                 <p className="text-gray-600">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <a
                     href="/user/signup"
                     className="text-blue-600 hover:text-blue-500 font-medium"
