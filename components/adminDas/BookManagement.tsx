@@ -21,6 +21,14 @@ interface Book {
   createdBy: string;
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalBooks: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export default function BookManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("all");
@@ -30,16 +38,34 @@ export default function BookManagement() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingBookId, setEditingBookId] = useState<string | null>(null);
 
-  const fetchBooks = async () => {
+  // Pagination state
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalBooks: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const fetchBooks = async (page: number = 1) => {
     try {
       setLoading(true);
-      const res = await getAllBooks();
+      const res = await getAllBooks(page, itemsPerPage);
       console.log("API Response:", res);
 
       if (res.success) {
-        const booksData = res.body || [];
+        const booksData = res.books || [];
         console.log("Books data:", booksData);
         setBooks(booksData);
+        setPagination({
+          currentPage: res.currentPage || 1,
+          totalPages: res.totalPages || 1,
+          totalBooks: res.totalBooks || 0,
+          hasNext: (res.currentPage || 1) < (res.totalPages || 1),
+          hasPrev: (res.currentPage || 1) > 1,
+        });
       } else {
         setError("Failed to fetch books");
       }
@@ -52,8 +78,15 @@ export default function BookManagement() {
   };
 
   useEffect(() => {
-    fetchBooks();
-  }, []);
+    fetchBooks(currentPage);
+  }, [currentPage]);
+
+  // Handle page change
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchBooks(currentPage);
+    }
+  }, [currentPage]);
 
   const handleDeleteBook = async (bookId: string, bookTitle: string) => {
     if (
@@ -70,9 +103,8 @@ export default function BookManagement() {
 
       if (res.success) {
         toast.success(`Book "${bookTitle}" deleted successfully`);
-        setBooks((prevBooks) =>
-          prevBooks.filter((book) => book._id !== bookId)
-        );
+        // Refresh the current page
+        fetchBooks(currentPage);
       } else {
         toast.error(res.message || "Failed to delete book");
       }
@@ -91,19 +123,87 @@ export default function BookManagement() {
   const handleEditSuccess = () => {
     toast.success("Book updated successfully!");
     setEditingBookId(null);
-    fetchBooks(); // Refresh the book list
+    fetchBooks(currentPage); // Refresh the book list
   };
 
   const handleEditCancel = () => {
     setEditingBookId(null);
   };
 
-  // Extract unique genres from books
+  // Pagination controls
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(
+      1,
+      pagination.currentPage - Math.floor(maxVisiblePages / 2)
+    );
+    const endPage = Math.min(
+      pagination.totalPages,
+      startPage + maxVisiblePages - 1
+    );
+
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    buttons.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(pagination.currentPage - 1)}
+        disabled={!pagination.hasPrev}
+        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+    );
+
+    // Page numbers
+    for (let page = startPage; page <= endPage; page++) {
+      buttons.push(
+        <button
+          key={page}
+          onClick={() => handlePageChange(page)}
+          className={`px-3 py-2 text-sm font-medium border rounded-lg ${
+            page === pagination.currentPage
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-500 border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          {page}
+        </button>
+      );
+    }
+
+    // Next button
+    buttons.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(pagination.currentPage + 1)}
+        disabled={!pagination.hasNext}
+        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    );
+
+    return buttons;
+  };
+
+  // Extract unique genres from all books (you might want to fetch this separately)
   const genres = [
     "all",
     ...Array.from(new Set(books.map((book) => book.genre).filter(Boolean))),
   ];
 
+  // Filter books based on search and genre (client-side filtering for current page)
   const filteredBooks = books.filter((book) => {
     const matchesSearch =
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -237,7 +337,7 @@ export default function BookManagement() {
           <div className="text-red-600 text-lg">Error loading books</div>
           <p className="text-gray-600 mt-2">{error}</p>
           <button
-            onClick={fetchBooks}
+            onClick={() => fetchBooks(1)}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           >
             Retry
@@ -255,7 +355,9 @@ export default function BookManagement() {
           <h1 className="text-2xl font-semibold text-gray-900">
             Book Management
           </h1>
-          <p className="text-gray-600 mt-1">Manage library book inventory</p>
+          <p className="text-gray-600 mt-1">
+            Manage library book inventory - {pagination.totalBooks} total books
+          </p>
         </div>
       </div>
 
@@ -307,7 +409,7 @@ export default function BookManagement() {
           <div className="flex items-center space-x-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">
-                {books.length}
+                {pagination.totalBooks}
               </div>
               <div className="text-sm text-gray-600">Total Books</div>
             </div>
@@ -319,6 +421,11 @@ export default function BookManagement() {
                 }
               </div>
               <div className="text-sm text-gray-600">Available</div>
+            </div>
+            <div className="text-center">
+              <div className="text-sm text-gray-600">
+                Page {pagination.currentPage} of {pagination.totalPages}
+              </div>
             </div>
           </div>
         </div>
@@ -466,6 +573,13 @@ export default function BookManagement() {
                 ? "Start by adding some books to your library"
                 : "Try adjusting your search or filters"}
             </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-2 mt-8 pb-6">
+            {renderPaginationButtons()}
           </div>
         )}
       </div>

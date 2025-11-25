@@ -55,7 +55,7 @@ export default function AdminTopBar() {
               </p>
               <p className="text-xs text-gray-500">{user?.role || "Admin"}</p>
             </div>
-            <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
+            <div className="w-8 h-8 bg-linear-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
               {getUserInitials()}
             </div>
           </div>

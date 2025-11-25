@@ -12,7 +12,6 @@ export default function AdminSidebar({
     { id: "overview", label: "Overview", icon: "📊" },
     { id: "books", label: "Book Management", icon: "📚" },
     { id: "users", label: "User Management", icon: "👥" },
-    { id: "reports", label: "System Reports", icon: "📈" },
   ];
 
   return (

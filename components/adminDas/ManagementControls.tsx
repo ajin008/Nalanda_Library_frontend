@@ -28,48 +28,6 @@ export default function ManagementControls() {
       color: "emerald",
       onClick: () => setShowBookForm(true),
     },
-    {
-      title: "Active Members Report",
-      description: "View member activity analytics",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
-      ),
-      color: "blue",
-      onClick: () => console.log("Members report"),
-    },
-    {
-      title: "View Overdue Book List",
-      description: "Check overdue returns",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
-      color: "red",
-      onClick: () => console.log("Overdue books"),
-    },
   ];
 
   const getButtonClasses = (color: string) => {
@@ -111,21 +69,6 @@ export default function ManagementControls() {
             </div>
           </button>
         ))}
-      </div>
-
-      {/* Quick Stats */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Quick Stats</h4>
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-gray-50 rounded-lg p-2">
-            <p className="text-gray-600">New Members</p>
-            <p className="font-semibold text-gray-900">12 this week</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-2">
-            <p className="text-gray-600">Overdue</p>
-            <p className="font-semibold text-gray-900">8 books</p>
-          </div>
-        </div>
       </div>
     </div>
   );

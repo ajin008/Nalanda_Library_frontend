@@ -20,8 +20,6 @@ export const createBook = async (data: BookFormData) => {
     }
   );
 
-  if (!res.ok) throw new Error("Failed to create book");
-
   return res.json();
 };
 
@@ -126,5 +124,17 @@ export const getBorrowStats = async () => {
       credentials: "include",
     }
   );
+  return res.json();
+};
+
+export const getBorrowHistory = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/borrow/history`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+
   return res.json();
 };

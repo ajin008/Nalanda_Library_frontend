@@ -1,79 +1,57 @@
 // components/dashboard/UserManagement.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAllUsersAPI } from "@/app/lib/api/admin";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: "member" | "admin" | "librarian";
-  joinDate: string;
-  borrowedBooks: number;
-  status: "active" | "suspended" | "inactive";
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  borrowedBooks?: number; // This will be calculated
+  status?: "active" | "suspended" | "inactive"; // Default to active
 }
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Dummy users data
-  const users: User[] = [
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "member",
-      joinDate: "2023-05-15",
-      borrowedBooks: 3,
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Sarah Wilson",
-      email: "sarah.wilson@example.com",
-      role: "admin",
-      joinDate: "2022-01-10",
-      borrowedBooks: 0,
-      status: "active",
-    },
-    {
-      id: "3",
-      name: "Mike Johnson",
-      email: "mike.johnson@example.com",
-      role: "member",
-      joinDate: "2023-11-20",
-      borrowedBooks: 7,
-      status: "active",
-    },
-    {
-      id: "4",
-      name: "Emily Chen",
-      email: "emily.chen@example.com",
-      role: "librarian",
-      joinDate: "2023-03-08",
-      borrowedBooks: 1,
-      status: "active",
-    },
-    {
-      id: "5",
-      name: "David Brown",
-      email: "david.brown@example.com",
-      role: "member",
-      joinDate: "2022-08-30",
-      borrowedBooks: 12,
-      status: "suspended",
-    },
-    {
-      id: "6",
-      name: "Lisa Garcia",
-      email: "lisa.garcia@example.com",
-      role: "member",
-      joinDate: "2024-01-05",
-      borrowedBooks: 0,
-      status: "inactive",
-    },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await getAllUsersAPI();
+      console.log("API Response:", res);
+
+      if (res.success) {
+        // Add default values for UI display
+        const usersWithDefaults = (res.users || []).map((user: User) => ({
+          ...user,
+          borrowedBooks: 0, // You might want to fetch this from a different API
+          status: "active" as const, // Default all users to active
+          joinDate: new Date(user.createdAt).toISOString().split("T")[0], // Format for display
+        }));
+        setUsers(usersWithDefaults);
+      } else {
+        setError("Failed to fetch users");
+      }
+    } catch (err) {
+      console.log("Error fetching users:", err);
+      setError("Error fetching users");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const roles = ["all", "member", "admin", "librarian"];
   const statuses = ["all", "active", "suspended", "inactive"];
@@ -113,6 +91,90 @@ export default function UserManagement() {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              User Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Manage library members and staff
+            </p>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div className="flex justify-center">
+            <svg
+              className="animate-spin h-8 w-8 text-blue-600"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+          <p className="text-gray-600 mt-2">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              User Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Manage library members and staff
+            </p>
+          </div>
+        </div>
+
+        {/* Error State */}
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div className="text-red-600 text-lg">Error loading users</div>
+          <p className="text-gray-600 mt-2">{error}</p>
+          <button
+            onClick={fetchUsers}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -242,7 +304,7 @@ export default function UserManagement() {
             <tbody className="divide-y divide-gray-200">
               {filteredUsers.map((user) => (
                 <tr
-                  key={user.id}
+                  key={user._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4">
@@ -263,30 +325,29 @@ export default function UserManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {user.joinDate}
+                    {formatDate(user.createdAt)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {user.borrowedBooks}
+                      {user.borrowedBooks || 0}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                        user.status
+                        user.status || "active"
                       )}`}
                     >
-                      {user.status.charAt(0).toUpperCase() +
-                        user.status.slice(1)}
+                      {(user.status || "active").charAt(0).toUpperCase() +
+                        (user.status || "active").slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                        Edit
-                      </button>
                       <button className="text-red-600 hover:text-red-900 text-sm font-medium">
-                        {user.status === "active" ? "Suspend" : "Activate"}
+                        {(user.status || "active") === "active"
+                          ? "Suspend"
+                          : "Activate"}
                       </button>
                     </div>
                   </td>
@@ -298,9 +359,15 @@ export default function UserManagement() {
 
         {filteredUsers.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-lg">No users found</div>
+            <div className="text-gray-400 text-lg">
+              {users.length === 0
+                ? "No users found"
+                : "No users match your search"}
+            </div>
             <div className="text-gray-500 text-sm mt-1">
-              Try adjusting your search or filters
+              {users.length === 0
+                ? "There are no users in the system yet"
+                : "Try adjusting your search or filters"}
             </div>
           </div>
         )}

@@ -61,8 +61,6 @@ export const signupAdmin = async (data: signupProp) => {
     }
   );
 
-  if (!result.ok) throw new Error("server not working");
-
   return result.json();
 };
 
@@ -76,8 +74,6 @@ export const loginAdmin = async (data: loginProp) => {
       credentials: "include",
     }
   );
-
-  if (!result.ok) throw new Error("server not working");
 
   const res = result.json();
   console.log("data from login admin", res);
@@ -94,6 +90,5 @@ export const logoutAdmin = async () => {
     }
   );
 
-  if (!result.ok) throw new Error("server error");
   return result.json();
 };

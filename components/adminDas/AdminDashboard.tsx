@@ -12,30 +12,21 @@ import UserManagement from "./UserManagement";
 export default function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("overview");
 
-  const metricsData = {
-    totalBooks: 1540,
-    borrowedBooks: 45,
-    availableBooks: 1495,
-    totalMembers: 320,
-  };
-
-  const topBooks = [
-    { title: "Dune", author: "Frank Herbert", borrows: 35 },
-    { title: "Sapiens", author: "Yuval Noah Harari", borrows: 31 },
-    { title: "The Lord of the Rings", author: "J.R.R. Tolkien", borrows: 28 },
-    { title: "Atomic Habits", author: "James Clear", borrows: 22 },
-    { title: "The Alchemist", author: "Paulo Coelho", borrows: 19 },
-  ];
+  // Remove the hardcoded metricsData and topBooks since they're now dynamic
+  // const metricsData = { ... };
+  // const topBooks = [ ... ];
 
   const renderContent = () => {
     switch (activeMenu) {
       case "overview":
         return (
           <>
-            <MetricsSection data={metricsData} />
+            {/* MetricsSection now fetches its own data */}
+            <MetricsSection />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <AggregationReport books={topBooks} />
+                {/* AggregationReport now fetches its own data */}
+                <AggregationReport />
               </div>
               <div className="lg:col-span-1">
                 <ManagementControls />
@@ -59,10 +50,10 @@ export default function AdminDashboard() {
       default:
         return (
           <>
-            <MetricsSection data={metricsData} />
+            <MetricsSection />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <AggregationReport books={topBooks} />
+                <AggregationReport />
               </div>
               <div className="lg:col-span-1">
                 <ManagementControls />
