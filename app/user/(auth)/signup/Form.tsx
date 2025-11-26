@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { signupUserGraphQL } from "@/app/lib/GraphQl/auth";
 
 interface SignupFormData {
   name: string;
@@ -25,7 +26,7 @@ export const Form = () => {
     setIsLoading(true);
 
     try {
-      const res = await signupUser(data);
+      const res = await signupUserGraphQL(data);
 
       if (res.success) {
         toast.success("Account created successfully!");

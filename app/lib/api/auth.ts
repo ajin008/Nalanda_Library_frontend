@@ -1,10 +1,10 @@
-interface signupProp {
+export interface signupProp {
   name: string;
   email: string;
   password: string;
 }
 
-interface loginProp {
+export interface loginProp {
   email: string;
   password: string;
 }

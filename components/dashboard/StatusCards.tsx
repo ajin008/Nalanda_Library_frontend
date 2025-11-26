@@ -128,7 +128,7 @@ export default function StatusCards() {
               <p className="text-xs text-gray-400 mt-1">{card.trend}</p>
             </div>
             <div
-              className={`w-12 h-12 bg-gradient-to-br ${getColorClasses(
+              className={`w-12 h-12 bg-linear-to-br ${getColorClasses(
                 card.color
               )} rounded-lg flex items-center justify-center text-white text-lg`}
             >

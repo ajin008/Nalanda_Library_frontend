@@ -1,4 +1,4 @@
-interface BookFormData {
+export interface BookFormData {
   title: string;
   author: string;
   isbn: string;

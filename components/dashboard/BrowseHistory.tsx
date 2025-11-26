@@ -266,7 +266,7 @@ export default function BrowseHistory() {
                   <div className="flex items-start space-x-4 flex-1">
                     {/* Book Icon */}
                     <div
-                      className={`w-12 h-14 rounded-lg border flex items-center justify-center flex-shrink-0 ${
+                      className={`w-12 h-14 rounded-lg border flex items-center justify-center shrink-0 ${
                         item.status === "borrowed"
                           ? "bg-blue-100 border-blue-200 text-blue-600"
                           : "bg-green-100 border-green-200 text-green-600"
