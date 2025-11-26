@@ -1,6 +1,7 @@
 // components/forms/EditBookForm.tsx
 "use client";
 import { getBookById, updateBook } from "@/app/lib/api/books";
+import { updateBookGraphQl } from "@/app/lib/GraphQl/books";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -118,8 +119,22 @@ export default function EditBookForm({
     setIsLoading(true);
 
     try {
-      const res = await updateBook(bookId, data);
+      let res;
 
+      if (process.env.NEXT_PUBLIC_ENABLE_GRAPHQL === "true") {
+        res = await updateBookGraphQl(bookId, data);
+
+        if (res?.data?.updateBook?.success) {
+          toast.success(res.data.updateBook.message);
+          onSuccess?.();
+          return;
+        } else {
+          toast.error(res?.errors?.[0]?.message || "GraphQL update failed");
+          return;
+        }
+      }
+
+      res = await updateBook(bookId, data);
       if (res.success) {
         toast.success("Book updated successfully!");
         onSuccess?.();
