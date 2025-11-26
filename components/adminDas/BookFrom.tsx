@@ -1,11 +1,13 @@
 // components/forms/BookForm.tsx
 "use client";
+
 import { createBook } from "@/app/lib/api/books";
+import { createBookGraphQL } from "@/app/lib/GraphQl/books";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-interface BookFormData {
+export interface BookFormData {
   title: string;
   author: string;
   isbn: string;
@@ -57,6 +59,20 @@ export default function BookForm({ onSuccess, onCancel }: BookFormProps) {
     setIsLoading(true);
 
     try {
+      if (process.env.NEXT_PUBLIC_ENABLE_GRAPHQL) {
+        console.log(`ENV:${process.env.NEXT_PUBLIC_ENABLE_GRAPHQL}`);
+        const res = await createBookGraphQL(data);
+
+        if (res.data?.createBook?.success) {
+          toast.success(res.data.createBook.message);
+          reset();
+          onSuccess?.();
+        } else {
+          toast.error(res.errors?.[0]?.message || "Error creating book");
+        }
+        return;
+      }
+
       const res = await createBook(data);
       if (res.success) {
         toast.success("Book added successfully!");

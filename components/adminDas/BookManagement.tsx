@@ -4,6 +4,7 @@ import { getAllBooks, deleteBook } from "@/app/lib/api/books";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import EditBookForm from "./EditBookForm";
+import { DeleteBookGraphQl } from "@/app/lib/GraphQl/books";
 
 interface Book {
   _id: string;
@@ -99,6 +100,17 @@ export default function BookManagement() {
 
     try {
       setDeletingId(bookId);
+
+      if (process.env.NEXT_PUBLIC_ENABLE_GRAPHQL) {
+        const res = await DeleteBookGraphQl(bookId);
+
+        if (res.data.deleteBook.success) {
+          toast.success(`Book "${bookTitle}" deleted successfully`);
+        } else {
+          toast.error(res.data.deleteBook.message || "failed to delete book");
+        }
+        return;
+      }
       const res = await deleteBook(bookId);
 
       if (res.success) {
